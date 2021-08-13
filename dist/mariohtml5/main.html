@@ -59,5 +59,72 @@
         <script src="code/music.js"></script>
 
         <script>$(document).ready(function() { new Enjine.Application().Initialize(new Mario.LoadingState(), 320, 240) });</script>
+
+    <style>
+      #outgoing {
+        width: 600px;
+        word-wrap: break-word;
+        white-space: normal;
+      }
+    </style>
+    <form id="chatform">
+      <input id="chat"></textarea>
+      <button type="submit">submit</button>
+    </form>
+    <form id="signalform">
+      <textarea id="incoming"></textarea>
+      <button type="submit">submit</button>
+    </form>
+    <pre id="outgoing"></pre>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/simple-peer/9.11.0/simplepeer.min.js"></script>
+    <script>
+      const p = new SimplePeer({
+        initiator: location.hash === '#1',
+        trickle: false
+      })
+
+      p.on('error', err => console.log('error', err))
+
+      p.on('signal', data => {
+        console.log('SIGNAL', JSON.stringify(data))
+        document.querySelector('#outgoing').textContent = JSON.stringify(data)
+      })
+
+      document.querySelector('#signalform').addEventListener('submit', ev => {
+        ev.preventDefault()
+        p.signal(JSON.parse(document.querySelector('#incoming').value))
+      })
+
+      document.querySelector('#chatform').addEventListener('submit', ev => {
+        ev.preventDefault()
+        p.send(document.querySelector('#chat').value)
+      })
+
+      p.on('connect', () => {
+        console.log('CONNECT')
+      })
+
+      p.on('data', data => {
+         const c = new TextDecoder().decode(data);
+         const keys = {
+           S: 83,
+           L: 37,
+           U: 38,
+           R: 39,
+           D: 40
+         };
+         const code = keys[c.toUpperCase()];
+         if (!code) return;
+
+         console.log("received", c, code);
+         document.dispatchEvent(new KeyboardEvent('keydown',{'keyCode': code}))
+         setTimeout(
+           () => document.dispatchEvent(new KeyboardEvent('keyup',{'keyCode': code})),
+           50
+         );
+      })
+    </script>
+
+
 	</body>
 </html>
