@@ -31,10 +31,18 @@
 
       const handleCon = conn => {
         conn.on('open', () => {
-            document.querySelector('#chatform').addEventListener('submit', ev => {
-                ev.preventDefault()
-                conn.send(document.querySelector('#chat').value)
-            })
+            document
+                .addEventListener('keydown', ev => {
+                    ev.preventDefault()
+                    console.log(ev);
+                    conn.send({type: ev.type, keyCode: ev.keyCode})
+                })
+            document
+                .addEventListener('keyup', ev => {
+                    ev.preventDefault()
+                    console.log(ev);
+                    conn.send({type: ev.type, keyCode: ev.keyCode})
+                })
         });
       };
 
@@ -46,9 +54,8 @@
         ev.preventDefault()
         const id = document.querySelector('#incoming').value;
         const con = p.connect(id);
-        console.log("got here 1");
         handleCon(con);
-        console.log("got here 2");
+
         const mediaStream = document.querySelector('#canvas').captureStream(25);
         const call = p.call(id, mediaStream); 
         console.log(call);
