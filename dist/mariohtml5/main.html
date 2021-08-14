@@ -3,11 +3,12 @@
 	<head>
 		<title>Infinite Mario - JavaScript</title>
         <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
 	</head>
 	<body>
-		<canvas id="canvas" width="640" height="480">
+        <div style="max-width: 700px"><canvas id="canvas">
 			<p>Your browser does not support the canvas element.</p>
-		</canvas>
+        </canvas></div>
         
         <!-- Enjine Includes -->
         <script src="Enjine/core.js"></script>
@@ -67,16 +68,27 @@
         white-space: normal;
       }
     </style>
-    <pre id="outgoing"></pre>
+    <pre id="outgoing" style="width:100%"></pre>
+    <button
+        id="copy-button"
+        onclick="navigator.clipboard.writeText(document.querySelector('#outgoing').innerText)"
+        >
+        Copy
+    </button>
     <script src="https://unpkg.com/peerjs@1.3.1/dist/peerjs.min.js"></script>
     <script>
-      const mediaStream = document
-          .querySelector('#canvas')
+      const canvas = document
+          .querySelector('#canvas');
+
+      canvas.width = canvas.parentElement.offsetWidth; 
+      canvas.height = canvas.width * 480 / 640; 
+
+      const mediaStream = canvas
           .captureStream(25);
 
-      const p = new Peer()
+      const p = new Peer();
 
-      p.on('error', err => console.log('error', err))
+      p.on('error', err => console.log('error', err));
       p.on('open', (id) => {
         document.querySelector('#outgoing').textContent = id; 
         p.on('connection', conn => {
@@ -97,7 +109,5 @@
       });
 
     </script>
-
-
 	</body>
 </html>
