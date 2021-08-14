@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Infinite Mario - JavaScript</title>
+        <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
+	</head>
+	<body>
+		<canvas id="canvas" style="display: none" width="640" height="480">
+			<p>Your browser does not support the canvas element.</p>
+		</canvas>
+		<video id="view" width="640" height="480">
+			<p>Your browser does not support the video element.</p>
+		</video>
+    <style>
+      #outgoing {
+        width: 600px;
+        word-wrap: break-word;
+        white-space: normal;
+      }
+    </style>
+    <form id="chatform">
+      <input id="chat"></textarea>
+      <button type="submit">submit</button>
+    </form>
+    <form id="signalform">
+      <textarea id="incoming"></textarea>
+      <button type="submit">submit</button>
+    </form>
+    <script src="https://unpkg.com/peerjs@1.3.1/dist/peerjs.min.js"></script>
+    <script>
+
+      const handleCon = conn => {
+        conn.on('open', () => {
+            document.querySelector('#chatform').addEventListener('submit', ev => {
+                ev.preventDefault()
+                conn.send(document.querySelector('#chat').value)
+            })
+        });
+      };
+
+      const p = new Peer()
+
+      p.on('error', err => console.log('error', err))
+
+      document.querySelector('#signalform').addEventListener('submit', ev => {
+        ev.preventDefault()
+        const id = document.querySelector('#incoming').value;
+        const con = p.connect(id);
+        console.log("got here 1");
+        handleCon(con);
+        console.log("got here 2");
+        const mediaStream = document.querySelector('#canvas').captureStream(25);
+        const call = p.call(id, mediaStream); 
+        console.log(call);
+
+        call.on('stream', stream => {
+          console.log("received stream", stream);
+          const video = document.querySelector('#view');
+          video.srcObject = stream;
+          video.onloadedmetadata = function(e) {
+            video.play();
+          };
+        });
+      })
+
+    </script>
+
+
+	</body>
+</html>
