@@ -10,7 +10,7 @@
         <div style="max-width: 700px"><canvas id="canvas">
 			<p>Your browser does not support the canvas element.</p>
         </canvas></div>
-        
+       
         <!-- Enjine Includes -->
         <script src="Enjine/core.js"></script>
         <script src="Enjine/gameCanvas.js"></script>
@@ -27,7 +27,7 @@
         <script src="Enjine/animatedSprite.js"></script>
         <script src="Enjine/collideable.js"></script>
         <script src="Enjine/application.js"></script>
-        
+       
         <!-- Actual game code -->
         <script src="code/setup.js"></script>
         <script src="code/spriteCuts.js"></script>
@@ -50,14 +50,14 @@
         <script src="code/bulletBill.js"></script>
         <script src="code/flowerEnemy.js"></script>
         <script src="code/shell.js"></script>
-        
+       
         <script src="code/titleState.js"></script>
         <script src="code/loadingState.js"></script>
         <script src="code/loseState.js"></script>
         <script src="code/winState.js"></script>
         <script src="code/mapState.js"></script>
         <script src="code/levelState.js"></script>
-        
+       
         <script src="code/music.js"></script>
 
         <script>$(document).ready(function() { new Enjine.Application().Initialize(new Mario.LoadingState(), 320, 240) });</script>
@@ -82,7 +82,7 @@
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       const SpeechGrammarList = window.SpeechGrammarList || window.webkitSpeechGrammarList;
       const recognition = new SpeechRecognition();
-      recognition.continuous = true;
+      recognition.continuous = false;
       recognition.lang = 'sv-SE';
       recognition.interimResults = true;
       recognition.maxAlternatives = 1;
@@ -90,15 +90,20 @@
 
       recognition.onresult = function(event) {
           console.log(event);
-          Array.from(event.results).map(ts => {
-              console.log(ts);
-              const transcript = ts[0].toLowerCase();
+          if (event.results[0].isFinal) return;
+          if (event.results[0].toString().includes('isDone')) return;
+          console.log(event.results[0].toString());
+
+          const transcripts = event.results[0][0].transcript.toLowerCase().split(' ');
+          transcripts.forEach(transcript => {
 
               console.log(transcript);
-              const keys = new Map([['vänster', 37], ['höger', 39], ['hoppa', 83]]);
+              const keys = new Map([['bakåt', 37], ['framåt', 39], ['hoppa', 83]]);
 
               const keyCode = keys.get(transcript.trim());
               if (!keyCode) return;
+              // dont process this more, since we already did it once
+              event.results[0].isDone = true;
 
               document.dispatchEvent(new KeyboardEvent('keydown', {keyCode}));
                   setTimeout(() => document.dispatchEvent(new KeyboardEvent('keyup', {keyCode})), 300);
@@ -110,8 +115,8 @@
       const canvas = document
           .querySelector('#canvas');
 
-      canvas.width = canvas.parentElement.offsetWidth; 
-      canvas.height = canvas.width * 480 / 640; 
+      canvas.width = canvas.parentElement.offsetWidth;
+      canvas.height = canvas.width * 480 / 640;
 
       const mediaStream = canvas
           .captureStream(25);
@@ -120,7 +125,7 @@
 
       p.on('error', err => console.log('error', err));
       p.on('open', (id) => {
-        document.querySelector('#outgoing').textContent = id; 
+        document.querySelector('#outgoing').textContent = id;
         p.on('connection', conn => {
             conn.on('open', () => {
                 conn.on('data', ({type, keyCode}) => {
